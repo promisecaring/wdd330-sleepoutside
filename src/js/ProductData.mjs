@@ -1,9 +1,9 @@
 function convertToJson(res) {
   if (res.ok) {
     return res.json();
-  } else {
-    throw new Error("Bad Response");
   }
+
+  throw new Error("Bad Response");
 }
 
 export default class ProductData {
@@ -13,9 +13,7 @@ export default class ProductData {
   }
 
   getData() {
-    return fetch(this.path)
-      .then(convertToJson)
-      .then((data) => data);
+    return fetch(this.path).then(convertToJson);
   }
 
   async findProductById(id) {
