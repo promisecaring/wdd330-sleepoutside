@@ -1,3 +1,4 @@
+
 // wrapper for querySelector...returns matching element
 export function qs(selector, parent = document) {
   return parent.querySelector(selector);
@@ -51,7 +52,6 @@ export function setClick(selector, callback) {
 export function updateCartCount() {
   const cartItems = getLocalStorage("so-cart");
   const count = Array.isArray(cartItems) ? cartItems.length : 0;
-
   const cart = document.querySelector(".cart");
 
   if (!cart) return;
@@ -66,3 +66,32 @@ export function updateCartCount() {
 
   countElement.textContent = count;
 }
+
+// Display an alert message at the top of the page
+export function alertMessage(message, scroll = true) {
+  const alert = document.createElement("div");
+
+  alert.classList.add("alert");
+
+  alert.innerHTML = `
+    <p>${message}</p>
+    <button class="alert-close" aria-label="Close alert">X</button>
+  `;
+
+  alert.addEventListener("click", (event) => {
+    if (event.target.classList.contains("alert-close")) {
+      alert.remove();
+    }
+  });
+
+  const main = document.querySelector("main");
+
+  if (main) {
+    main.prepend(alert);
+  }
+
+  if (scroll) {
+    window.scrollTo(0, 0);
+  }
+}
+

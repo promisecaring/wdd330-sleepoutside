@@ -1,4 +1,3 @@
-
 import { getLocalStorage } from "./utils.mjs";
 import ExternalServices from "./ExternalServices.mjs";
 
@@ -62,7 +61,8 @@ export default class CheckoutProcess {
       this.shipping = 0;
     }
 
-    this.orderTotal = this.itemTotal + this.tax + this.shipping;
+    this.orderTotal =
+      this.itemTotal + this.tax + this.shipping;
 
     this.displayOrderTotals();
   }
@@ -102,7 +102,8 @@ export default class CheckoutProcess {
     }));
   }
 
-  async checkout(form) {
+async checkout(form) {
+  try {
     const formData = formDataToJSON(form);
 
     formData.orderDate = new Date().toISOString();
@@ -111,10 +112,24 @@ export default class CheckoutProcess {
     formData.tax = this.tax.toFixed(2);
     formData.items = this.packageItems(this.list);
 
-    console.log("ORDER BEING SENT:", formData);
+    console.log("ORDER BEING SENT:");
+    console.log(JSON.stringify(formData, null, 2));
 
     const service = new ExternalServices();
 
-    return service.checkout(formData);
+    return await service.checkout(formData);
+  } catch (err) {
+    console.error("CHECKOUT ERROR NAME:", err.name);
+    console.error("CHECKOUT ERROR MESSAGE:", err.message);
+    console.error(
+      "CHECKOUT ERROR MESSAGE JSON:",
+      JSON.stringify(err.message, null, 2)
+    );
+    console.error("FULL CHECKOUT ERROR:", err);
+
+    throw err;
   }
 }
+ 
+}
+
