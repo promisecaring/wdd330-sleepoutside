@@ -1,56 +1,47 @@
-import { getLocalStorage, setLocalStorage } from "./utils.mjs";
+import CheckoutProcess from "./CheckoutProcess.mjs";
 
-const cartItems = getLocalStorage("so-cart");
+const checkout = new CheckoutProcess(
+  "so-cart",
+  ".order-summary"
+);
 
-function renderCheckoutItems() {
-  const checkoutItems = document.querySelector("#checkoutItems");
-  const totalElement = document.querySelector("#checkoutTotal");
+// Initialize the checkout page
+checkout.init();
 
-  if (!checkoutItems) return;
+// Calculate totals when the ZIP code is entered
+const zip = document.querySelector("#zip");
 
-  checkoutItems.innerHTML = cartItems
-    .map(
-      (item) => `
-        <li class="cart-card divider">
-          <img
-            src="${item.Image}"
-            alt="${item.Name}"
-          />
-          <div>
-            <h3>${item.Name}</h3>
-            <p>Quantity: 1</p>
-            <p>$${item.FinalPrice}</p>
-          </div>
-        </li>
-      `
-    )
-    .join("");
-
-  const total = cartItems.reduce(
-    (sum, item) => sum + Number(item.FinalPrice),
-    0
-  );
-
-  totalElement.textContent = total.toFixed(2);
+if (zip) {
+  zip.addEventListener("blur", () => {
+    checkout.calculateOrderTotal();
+  });
 }
 
-function placeOrder(event) {
-  event.preventDefault();
+// Process the order when the form is submitted
+const form = document.querySelector("#checkoutForm");
 
-  if (cartItems.length === 0) {
-    alert("Your cart is empty.");
-    return;
-  }
+if (form) {
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
 
-  setLocalStorage("so-cart", []);
+    if (!form.checkValidity()) {
+      form.reportValidity();
+      return;
+    }
 
-  alert("Thank you! Your order has been placed.");
+    try {
+      const response = await checkout.checkout(form);
 
-  window.location.href = "../index.html";
+      console.log("Checkout response:", response);
+
+      alert("Thank you! Your order has been placed.");
+
+      localStorage.removeItem("so-cart");
+
+      window.location.href = "../index.html";
+    } catch (error) {
+      console.error("Checkout failed:", error);
+      alert("Sorry, there was a problem placing your order.");
+    }
+  });
 }
-
-document
-  .querySelector("#checkoutForm")
-  .addEventListener("submit", placeOrder);
-
-renderCheckoutItems();
